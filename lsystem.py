@@ -1,5 +1,4 @@
-import turtle
-import random
+import wselect
 
 """
 select(tuples): 
@@ -9,17 +8,6 @@ select(tuples):
     using a lottery system. Note, this is not very precise,
     so use numpy's choice function if precision is necessary.
 """
-def select(choices, weights):
-    total = 100
-    count = 0
-    winner = random.randint(0, 99)
-
-    for choice, weight in zip(choices, weights):
-        numTickets = weight * total
-        if winner < numTickets + count:
-            return choice
-        else:
-            count += numTickets
 
 def foo(a):
     a += 1
@@ -36,7 +24,7 @@ def stocLSystem(axioms, rules, iterations):
         newAxioms = ''
         for symbol in axioms:
             if symbol in rules:
-                newAxioms = ''.join([newAxioms, select(rules[symbol][0], rules[symbol][1])])
+                newAxioms = ''.join([newAxioms, wselect.select(rules[symbol][0], rules[symbol][1])])
             else:
                 newAxioms = ''.join([newAxioms, symbol])
         axioms = newAxioms
