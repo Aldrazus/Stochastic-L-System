@@ -1,18 +1,5 @@
 import wselect
 
-"""
-select(tuples): 
-    input: sequences of choices and weights, both of same length
-    output: selected choice
-    Description: Selects from choices with weighted probabilities
-    using a lottery system. Note, this is not very precise,
-    so use numpy's choice function if precision is necessary.
-"""
-
-def foo(a):
-    a += 1
-    return
-
 
 """
 Simple stochastic L-system:
