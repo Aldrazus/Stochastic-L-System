@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{A0786B88-2ADB-4C21-ABE8-AA2D79766269}") = "MySqlPhpScripts", "..\..\..\..\Github\Stochastic-L-System\mysql_php\MySqlPhpScripts\MySqlPhpScripts\MySqlPhpScripts.phpproj", "{6233E49C-DAB4-43D8-833F-A1EBC8473D3B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6233E49C-DAB4-43D8-833F-A1EBC8473D3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6233E49C-DAB4-43D8-833F-A1EBC8473D3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B12B70FA-A501-4952-932C-B745A8BAC804}
+	EndGlobalSection
+EndGlobal
