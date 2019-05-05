@@ -49,8 +49,13 @@ class StringToStructure
                 string material = "wood";
                 double x = l.blockCoordinates[rowIndex][colIndex][0];
                 double y = l.blockCoordinates[rowIndex][colIndex][1];
-                //  TODO: include checks for rotation
                 double rotation = 0;
+
+                //  Check if it's a rotated block.
+                if ("379BD".Contains(symbol)) {
+                    rotation = 90;
+                }
+
                 xmlBlocks += Xmlify(blockType, material, x, y, rotation);
             }
         }
@@ -67,7 +72,7 @@ class StringToStructure
 
     }
 
-#if (false)
+#if (true)
     static void Main(string[] args)
     {
         //File path for level xml
@@ -82,26 +87,36 @@ class StringToStructure
             {"A", "air"}
         };
 
-        Dictionary<string, Tuple<List<string>, List<double>>> rules = new Dictionary<string, Tuple<List<string>, List<double>>>
+        Dictionary<string, Tuple<List<string>, List<double>>> rules1 = new Dictionary<string, Tuple<List<string>, List<double>>>
                 {
                     {"1", new Tuple<List<string>, List<double>>(new List<string> {"1", "212"}, new List<double> {0.80, 0.20})},
                     {"4", new Tuple<List<string>, List<double>>(new List<string> {"4", "141"}, new List<double> {0.60, 0.40})},
                     {"2", new Tuple<List<string>, List<double>>(new List<string> {"2", "26262"}, new List<double> {0.20, 0.80})}
                 };
 
-        LSystem lsystem = new LSystem("4", rules);
+        Dictionary<string, Tuple<List<string>, List<double>>> rules2 = new Dictionary<string, Tuple<List<string>, List<double>>>
+                {
+                    {"2", new Tuple<List<string>, List<double>>(new List<string> {"2", "234"}, new List<double> {0.80, 0.20})},
+                    {"4", new Tuple<List<string>, List<double>>(new List<string> {"654", "34652"}, new List<double> {0.60, 0.40})},
+                    {"6", new Tuple<List<string>, List<double>>(new List<string> {"6", "64574"}, new List<double> {0.20, 0.80})}
+                };
 
-        LSystem r = new LSystem(3, 5);
+        //LSystem r1 = new LSystem(rules1, 3, 5);
+        LSystem r1 = new LSystem(3, 5);
+        //LSystem r2 = new LSystem(rules2, 3, 5);
+        LSystem r2 = new LSystem(3, 5);
+
+        LSystem r3 = LSystem.Crossover(r1, r2);
 
         //Iterate through L-system
-        lsystem.Iterate(3);
+        r3.Iterate(3);
 
         //Start writing in level file
         StartFile(path);
-        WriteBlocksToFile(lsystem, path);
+        WriteBlocksToFile(r3, path);
         EndFile(path);
 
-        foreach (string axiom in lsystem.iterations)
+        foreach (string axiom in r3.iterations)
         {
             Console.WriteLine(axiom);
         }

@@ -14,14 +14,23 @@ public class LSystem
     //Change list to tuple.
     private Dictionary<string, Tuple<List<string>, List<double>>> rules;
 
+    //  Change these to private.
     public int maxHeight;
 
+    public int maxWidth = 5;
+
+    public int numRules = 3;
+
+    public double fitness;
+
     public List<string> iterations;
+
 
     public List<double> rowStartCoordinates;
 
     public List<List<List<double>>> blockCoordinates;
 
+    //Change to static
     public Dictionary<string, List<double>> blocks = new Dictionary<string, List<double>>
         {
             {"1", new List<double> {0.84, 0.84}},
@@ -41,8 +50,8 @@ public class LSystem
 
 
     //  TODO: fix issue with air blocks and height checks
-    public Dictionary<string, string> block_names = new Dictionary<string, string>
-    {
+    //Change to static
+    public Dictionary<string, string> block_names = new Dictionary<string, string> {
         //{"0", "Air"},
         {"1", "SquareHole"},
         {"2", "RectFat"},
@@ -60,8 +69,18 @@ public class LSystem
     };
 
     //Constructor with pre-defined rules & axiom.
-    public LSystem(string axiom, Dictionary<string, Tuple<List<string>, List<double>>> r)
-    {
+    public LSystem(Dictionary<string, Tuple<List<string>, List<double>>> r, int numRule, int maxW) {
+        //  Get an axiom from a rule.
+        string axiom = "A"; //  Default
+        foreach (KeyValuePair<string, Tuple<List<string>, List<double>>> ruleset in r) {
+            if (ruleset.Value.Item1.Count != 0) {
+                axiom = ruleset.Key;
+                break;
+            }
+        }
+
+        maxWidth = maxW;
+        numRules = numRule;
         rules = r;
         iterations = new List<string> { axiom };
         rowStartCoordinates = new List<double> { };
@@ -69,32 +88,36 @@ public class LSystem
     }
 
     //Constructor with random rules & axiom.
-    public LSystem(int numRules, int maxWidth)
-    {
+    public LSystem(int numRule, int maxW) {
 
-        //Get random axiom
-        List<string> possibleAxioms = new List<string>(blocks.Keys);
+        numRules = numRule;
+        maxWidth = maxW;
+        //Get random rules
+        rules = GenerateRandomRules(numRule, maxW);
+
+
+        //Get random axiom from rule conditions
+        List<string> possibleAxioms = new List<string>(rules.Keys);
         string axiom = possibleAxioms[random.Next(0, possibleAxioms.Count)];
 
         //Initialize LSystem
-        rules = GenerateRandomRules(numRules, maxWidth);
+        
         iterations = new List<string> { axiom };
         rowStartCoordinates = new List<double> { };
     }
-    private List<double> RescaleWeights(List<double> weights)
-    {
+
+    //Rescale probabilities of rules to interval [0, 1]
+    public static List<double> RescaleWeights(List<double> weights) {
 
         double total = 0;
 
         List<double> newWeights = new List<double> { };
 
-        foreach (double weight in weights)
-        {
+        foreach (double weight in weights) {
             total += weight;
         }
 
-        foreach (double weight in weights)
-        {
+        foreach (double weight in weights) {
             newWeights.Add(weight / total);
         }
 
@@ -102,22 +125,26 @@ public class LSystem
 
     }
 
-    //  TODO
-    private Dictionary<string, Tuple<List<string>, List<double>>> GenerateRandomRules(int numRules, int maxWidth)
-    {
+    //Generates random rules
+    private Dictionary<string, Tuple<List<string>, List<double>>> GenerateRandomRules(int numRule, int maxW) {
+
+        //  Initializing the dictionary
         Dictionary<string, Tuple<List<string>, List<double>>> newRules = new Dictionary<string, Tuple<List<string>, List<double>>>();
-        for (int i = 0; i < numRules; i++)
-        {
+        foreach (string symbol in blocks.Keys) {
+            newRules[symbol] = new Tuple<List<string>, List<double>>(new List<string>(), new List<double>());
+        }
+
+
+        for (int i = 0; i < numRule; i++) {
             List<string> symbols = new List<string>(blocks.Keys);
 
             //Get a condition.
             string condition = symbols[random.Next(symbols.Count)];
 
             //Get a successor of random width < max width.
-            int succWidth = random.Next(1, maxWidth);
+            int succWidth = random.Next(1, maxW);
             string successor = "";
-            for (int s = 0; s < succWidth; s++)
-            {
+            for (int s = 0; s < succWidth; s++) {
                 string nextSymbol = symbols[random.Next(symbols.Count)];
                 successor += nextSymbol;
             }
@@ -125,34 +152,21 @@ public class LSystem
             //Get a probability.
             double probability = random.Next(0, 100) / 100;
 
-            //TODO: REMOVE IF STATEMENT, COMBINE TO ONE CASE
-            //Check if condition already in dictionary.
-            if (newRules.ContainsKey(condition))
-            {
-                //Update existing successors and probabilities for given condition.
-                List<string> newSuccessors = newRules[condition].Item1;
-                List<double> newProbabilities = newRules[condition].Item2;
+            //Update existing successors and probabilities for given condition.
+            List<string> newSuccessors = newRules[condition].Item1;
+            List<double> newProbabilities = newRules[condition].Item2;
 
-                newSuccessors.Add(successor);
-                newProbabilities.Add(probability);
+            newSuccessors.Add(successor);
+            newProbabilities.Add(probability);
 
-                //Rescale probabilities to [0, 1].
-                newProbabilities = RescaleWeights(newProbabilities);
+            //Rescale probabilities to [0, 1].
+            newProbabilities = RescaleWeights(newProbabilities);
 
-                //Replace old successors and probabilities with new ones.
-                newRules[condition] = new Tuple<List<string>, List<double>>(
-                    new List<string>(newSuccessors),
-                    new List<double>(newProbabilities)
-                );
-            }
-            else
-            {
-                //Add new rules (successor and 100% probability for given condition).
-                newRules[condition] = new Tuple<List<string>, List<double>>(
-                    new List<string> { successor },
-                    new List<double> { 1.0 }
-                );
-            }
+            //Replace old successors and probabilities with new ones.
+            newRules[condition] = new Tuple<List<string>, List<double>>(
+                new List<string>(newSuccessors),
+                new List<double>(newProbabilities)
+            );
 
         }
 
@@ -160,37 +174,167 @@ public class LSystem
 
     }
 
-    //  TODO
-    public void Crossover()
-    {
+    public static LSystem Crossover(LSystem lparent, LSystem rparent) {
+
+
+        //  Don't really need to be equal
+        if (lparent.numRules != rparent.numRules) {
+            Console.WriteLine("Error: Parents do not have equal number of rules.");
+        }
+
+        //  Initializing the dictionary
+        Dictionary<string, Tuple<List<string>, List<double>>> offspringRules = new Dictionary<string, Tuple<List<string>, List<double>>>();
+        foreach (string symbol in lparent.blocks.Keys)
+        {
+            offspringRules[symbol] = new Tuple<List<string>, List<double>>(new List<string>(), new List<double>());
+        }
+
+
+        //  Get rules from the left parent.
+        int ldictIndex = 0;
+        int llistIndex = 0;
+        List<string> lconditions = new List<string>(lparent.rules.Keys);
+        //  TODO: change to half of numRules
+        for (int i = 0; i < lparent.numRules / 2; i++) {
+
+            //  Check if all of the rules with same condition have been seen.
+            while (llistIndex >= lparent.rules[lconditions[ldictIndex]].Item1.Count)
+            {
+                //  Move to the next condition
+                ldictIndex++;
+                llistIndex = 0;
+            }
+
+            string condition = lconditions[ldictIndex];
+            string successor = lparent.rules[condition].Item1[llistIndex];
+            double probability = lparent.rules[condition].Item2[llistIndex];
+
+
+            //Update existing successors and probabilities for given condition.
+            List<string> newSuccessors = offspringRules[condition].Item1;
+            List<double> newProbabilities = offspringRules[condition].Item2;
+
+            newSuccessors.Add(successor);
+            newProbabilities.Add(probability);
+
+            //Rescale probabilities to [0, 1].
+            newProbabilities = RescaleWeights(newProbabilities);
+
+            //Replace old successors and probabilities with new ones.
+            offspringRules[condition] = new Tuple<List<string>, List<double>>(
+                new List<string>(newSuccessors),
+                new List<double>(newProbabilities)
+            );
+
+            llistIndex++;
+            
+        }
+
+        //  Get rules from right parent.
+        int rdictIndex = 0;
+        int rlistIndex = 0;
+        List<string> rconditions = new List<string>(rparent.rules.Keys);
+        //  TODO: change to half of numRules
+        for (int i = rparent.numRules / 2; i < rparent.numRules; i++)
+        {
+
+            //  Check if all of the rules with same condition have been seen.
+            while (rlistIndex >= rparent.rules[rconditions[rdictIndex]].Item1.Count)
+            {
+                //  Move to the next condition
+                rdictIndex++;
+                rlistIndex = 0;
+            }
+
+            string condition = rconditions[rdictIndex];
+            string successor = rparent.rules[condition].Item1[rlistIndex];
+            double probability = rparent.rules[condition].Item2[rlistIndex];
+
+
+            //Update existing successors and probabilities for given condition.
+            List<string> newSuccessors = offspringRules[condition].Item1;
+            List<double> newProbabilities = offspringRules[condition].Item2;
+
+            newSuccessors.Add(successor);
+            newProbabilities.Add(probability);
+
+            //Rescale probabilities to [0, 1].
+            newProbabilities = RescaleWeights(newProbabilities);
+
+            //Replace old successors and probabilities with new ones.
+            offspringRules[condition] = new Tuple<List<string>, List<double>>(
+                new List<string>(newSuccessors),
+                new List<double>(newProbabilities)
+            );
+
+            rlistIndex++;
+
+        }
+
+        return new LSystem(offspringRules, lparent.numRules, lparent.maxWidth);
+
+
 
     }
 
-    //  TODO
-    public void Mutation()
-    {
+
+    //  TODO: Change condition too?
+    //  Mutates one random rule, changing the successor and probability of that rule.
+    public static LSystem Mutation(LSystem l) {
+        List<string> symbols = new List<string>(l.blocks.Keys);
+
+        //Get a successor of random width < max width.
+        int succWidth = random.Next(1, l.maxWidth);
+        string successor = "";
+        for (int s = 0; s < succWidth; s++)
+        {
+            string nextSymbol = symbols[random.Next(symbols.Count)];
+            successor += nextSymbol;
+        }
+
+        //Get a probability.
+        double probability = random.Next(0, 100) / 100;
+
+        Dictionary<string, Tuple<List<string>, List<double>>> r = l.rules;
+
+        foreach (KeyValuePair<string, Tuple<List<string>, List<double>>> ruleset in l.rules) {
+            if (ruleset.Value.Item1.Count != 0) {
+                List<string> newSuccessors = ruleset.Value.Item1;
+                List<double> newProbabilities = ruleset.Value.Item2;
+
+                //  Mutate a random rule
+                int randInd = random.Next(0, newSuccessors.Count);
+                newSuccessors[randInd] = successor;
+                newProbabilities[randInd] = probability;
+
+                //Rescale probabilities to [0, 1].
+                newProbabilities = RescaleWeights(newProbabilities);
+                r[ruleset.Key] = new Tuple<List<string>, List<double>>(new List<string>(newSuccessors), new List<double>(newProbabilities));
+
+                return new LSystem(r, l.numRules, l.maxWidth);
+            }
+        }
+
+        Console.WriteLine("Error: Empty rule dictionary.");
+        return new LSystem(r, l.numRules, l.maxWidth);
 
     }
 
-    // Change to iterate certain number of times so that GetStartCoordinates can be used maybe?
-    public void Iterate(int numIter)
-    {
+    //  Iterates LSystem, applying rules on axiom for numIter iterations.
+    public void Iterate(int numIter) {
         iterations = new List<string> { iterations[0] };
 
-        for (; numIter > 0; numIter--)
-        {
+        for (; numIter > 0; numIter--) {
 
             string newAxiom = "";
 
-            foreach (char symbol in iterations[iterations.Count - 1])
-            {
-                if (rules.ContainsKey(symbol.ToString()))
-                {
+            foreach (char symbol in iterations[iterations.Count - 1]) {
+                //  Check if there is a rule with that condition.
+                if (rules.ContainsKey(symbol.ToString()) && rules[symbol.ToString()].Item1.Count != 0) {
                     WSelect wselect = new WSelect();
                     newAxiom += wselect.Select(rules[symbol.ToString()].Item1, rules[symbol.ToString()].Item2);
                 }
-                else
-                {
+                else {
 
                     newAxiom += symbol;
                 }
@@ -206,11 +350,9 @@ public class LSystem
         //Debug.Log("-----------------------------------------");
 
         blockCoordinates = new List<List<List<double>>>();
-        for (int i = 0; i < iterations.Count; i++)
-        {
+        for (int i = 0; i < iterations.Count; i++) {
             blockCoordinates.Add(new List<List<double>>());
-            for (int j = 0; j < iterations[i].Length; j++)
-            {
+            for (int j = 0; j < iterations[i].Length; j++) {
                 blockCoordinates[i].Add(new List<double>());
             }
         }
@@ -221,23 +363,20 @@ public class LSystem
     }
 
 
-    //  Update the list of start coordinates
-    private void GetStartCoordinates(double structureCenterX)
-    {
+    //  Update the list of start coordinates.
+    private void GetStartCoordinates(double structureCenterX) {
 
         double rowCenterX = structureCenterX;
 
         //  Find the start of each row (X-coordinate) by subtracting half of width from
         //  structure center.
         //  Goes from top row to bottom row.
-        for (int rowIndex = 0; rowIndex < iterations.Count; rowIndex++)
-        {
+        for (int rowIndex = 0; rowIndex < iterations.Count; rowIndex++) {
 
             double rowWidth = 0;
 
 
-            foreach (char symbol in iterations[rowIndex])
-            {
+            foreach (char symbol in iterations[rowIndex]) {
                 //Debug.Log(symbol.ToString());
                 rowWidth += blocks[symbol.ToString()][0];
             }
@@ -251,43 +390,35 @@ public class LSystem
 
     }
 
-    private void GetBlockCoordinates()
-    {
+    private void GetBlockCoordinates() {
 
-        for (int rowIndex = iterations.Count - 1; rowIndex > -1; rowIndex--)
-        {
+        for (int rowIndex = iterations.Count - 1; rowIndex > -1; rowIndex--) {
 
             //  Get x coordinates
             double x = rowStartCoordinates[rowIndex];
-            for (int colIndex = 0; colIndex < iterations[rowIndex].Length; colIndex++)
-            {
+            for (int colIndex = 0; colIndex < iterations[rowIndex].Length; colIndex++) {
                 x += blocks[iterations[rowIndex][colIndex].ToString()][0] / 2;
                 blockCoordinates[rowIndex][colIndex].Add(x);
                 x += blocks[iterations[rowIndex][colIndex].ToString()][0] / 2;
             }
 
             //  Get y coordinates
-            if (rowIndex == iterations.Count - 1)
-            {
-                for (int colIndex = 0; colIndex < iterations[rowIndex].Length; colIndex++)
-                {
+            if (rowIndex == iterations.Count - 1) {
+                for (int colIndex = 0; colIndex < iterations[rowIndex].Length; colIndex++) {
                     blockCoordinates[rowIndex][colIndex].Add(-3.5 + blocks[iterations[rowIndex][colIndex].ToString()][1] / 2);
                 }
             }
-            else
-            {
+            else {
 
                 string bottomRow = iterations[rowIndex + 1], currRow = iterations[rowIndex];
-                for (int colIndex = 0; colIndex < iterations[rowIndex].Length; colIndex++)
-                {
+                for (int colIndex = 0; colIndex < iterations[rowIndex].Length; colIndex++) {
                     List<double> checkInterval = new List<double> {
                         blockCoordinates[rowIndex][colIndex][0] - blocks[currRow[colIndex].ToString()][0],
                         blockCoordinates[rowIndex][colIndex][0] + blocks[currRow[colIndex].ToString()][0]
                     };
 
                     double maxHeight = -3.5;
-                    for (int axIndex = 0; axIndex < bottomRow.Length; axIndex++)
-                    {
+                    for (int axIndex = 0; axIndex < bottomRow.Length; axIndex++) {
                         string symbol = bottomRow[axIndex].ToString();
                         double blockWidth = blocks[symbol][0];
                         double blockCenterX = blockCoordinates[rowIndex + 1][axIndex][0];
@@ -302,8 +433,7 @@ public class LSystem
                         {
                             double blockHeight = blocks[symbol][1];
                             double blockTopEdgeHeight = blockCoordinates[rowIndex + 1][axIndex][1] + blockHeight / 2;
-                            if (blockTopEdgeHeight > maxHeight)
-                            {
+                            if (blockTopEdgeHeight > maxHeight) {
                                 maxHeight = blockTopEdgeHeight;
                             }
                         }
@@ -318,8 +448,7 @@ public class LSystem
 
     }
 
-    public string GenerateXML(int height)
-    {
+    public string GenerateXML(int height) {
         //Generate the level by iterating.
         Iterate(height);
 
@@ -332,8 +461,7 @@ public class LSystem
 
     }
 
-    private string StartXML()
-    {
+    private string StartXML() {
         return "<?xml version=\"1.0\" encoding=\"utf-16\"?>\n" +
             "<Level width =\"2\">\n" +
             "<Camera x=\"0\" y=\"2\" minWidth=\"20\" maxWidth=\"30\">\n" +
@@ -346,14 +474,12 @@ public class LSystem
             "<GameObjects>\n";
     }
 
-    private string EndXML()
-    {
+    private string EndXML() {
         return "</GameObjects>\n" +
             "</Level>\n";
     }
 
-    private string BlocksToXML()
-    {
+    private string BlocksToXML() {
         string xmlBlocks = "";
         for (int rowIndex = 0; rowIndex < iterations.Count; rowIndex++)
         {
@@ -372,8 +498,7 @@ public class LSystem
         return xmlBlocks;
     }
 
-    private static string Xmlify(string blockType, string material, double x, double y, double rot)
-    {
+    private static string Xmlify(string blockType, string material, double x, double y, double rot) {
         return String.Format(
             "<Block type=\"{0}\" material=\"{1}\" x=\"{2}\" y=\"{3}\" rotation=\"{4}\" />\n",
             blockType,
@@ -383,8 +508,7 @@ public class LSystem
             rot.ToString());
     }
 
-    public string this[int key]
-    {
+    public string this[int key] {
         get
         {
             return iterations[key];
@@ -395,26 +519,26 @@ public class LSystem
         }
     }
 
-    class WSelect
-    {
+    public void SetFitness(double fvalue) {
+        fitness = fvalue;
+    }
+
+    class WSelect {
 
         private static System.Random random = new System.Random();
-        public string Select(List<string> choices, List<double> weights)
-        {
+        public string Select(List<string> choices, List<double> weights) {
             double total = 100.0;
             double count = 0.0;
             double winner = random.Next(0, 100);
 
-            for (int i = 0; i < choices.Count; i++)
-            {
+            for (int i = 0; i < choices.Count; i++) {
                 count += weights[i] * total;
-                if (winner < count)
-                {
+                if (winner < count) {
                     return choices[i];
                 }
             }
 
-            Debug.Log("Error: choice was not picked.");
+            //Debug.Log("Error: choice was not picked.");
             return choices[0];
         }
     }
