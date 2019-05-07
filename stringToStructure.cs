@@ -158,8 +158,10 @@ class StringToStructure
             Console.WriteLine(axiom);
         }
 
-        Console.WriteLine(LSystem.Encode(r3));
-
+        string encodedString = LSystem.Encode(r3);
+        Console.WriteLine(encodedString);
+        LSystem decodedLSystem = LSystem.Decode(encodedString);
+        Console.WriteLine(LSystem.Encode(decodedLSystem));
 
 
         Console.ReadKey();

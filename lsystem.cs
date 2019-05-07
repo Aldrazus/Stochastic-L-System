@@ -15,6 +15,8 @@ public class LSystem
     private Dictionary<string, Tuple<List<string>, List<double>>> rules;
 
     //  Change these to private.
+    public int id;
+
     public int maxHeight;
 
     public int maxWidth = 5;
@@ -613,8 +615,6 @@ public class LSystem
                     rules += ",";
                     //  Add the probability
                     rules += ruleset.Value.Item2[ruleIndex].ToString();
-                    Console.WriteLine("prob: " + ruleset.Value.Item2[ruleIndex].ToString() + "\n");
-                    Console.WriteLine(ruleset.Value.Item2[ruleIndex]);
                     if (ruleIndex < ruleset.Value.Item1.Count - 1) {
                         rules += ";";
                     }
