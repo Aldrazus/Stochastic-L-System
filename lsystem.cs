@@ -216,7 +216,7 @@ public class LSystem
             }
 
             //Get a probability.
-            double probability = random.Next(0, 100) / 100;
+            double probability = (double)random.Next(0, 100) / 100.0;
 
             //Update existing successors and probabilities for given condition.
             List<string> newSuccessors = newRules[condition].Item1;
@@ -612,7 +612,9 @@ public class LSystem
                     rules += ruleset.Value.Item1[ruleIndex];
                     rules += ",";
                     //  Add the probability
-                    rules += ruleset.Value.Item2[ruleIndex];
+                    rules += ruleset.Value.Item2[ruleIndex].ToString();
+                    Console.WriteLine("prob: " + ruleset.Value.Item2[ruleIndex].ToString() + "\n");
+                    Console.WriteLine(ruleset.Value.Item2[ruleIndex]);
                     if (ruleIndex < ruleset.Value.Item1.Count - 1) {
                         rules += ";";
                     }

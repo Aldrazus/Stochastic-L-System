@@ -158,6 +158,9 @@ class StringToStructure
             Console.WriteLine(axiom);
         }
 
+        Console.WriteLine(LSystem.Encode(r3));
+
+
 
         Console.ReadKey();
     }
