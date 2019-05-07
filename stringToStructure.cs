@@ -6,6 +6,28 @@ class StringToStructure
 {
     private static string Xmlify(string blockType, string material, double x, double y, double rot)
     {
+        //  Check for pigs
+        if (blockType == "BasicSmall") {
+            return String.Format(
+                "<Pig type=\"{0}\" material=\"{1}\" x=\"{2}\" y=\"{3}\" rotation=\"{4}\" />\n",
+                blockType,
+                material,
+                x.ToString(),
+                y.ToString(),
+                rot.ToString());
+        }
+
+        //  Check for TNT
+        if (blockType == "TNT") {
+            return String.Format(
+                "<TNT type=\"{0}\" material=\"{1}\" x=\"{2}\" y=\"{3}\" rotation=\"{4}\" />\n",
+                "",
+                material,
+                x.ToString(),
+                y.ToString(),
+                rot.ToString());
+        }
+
         return String.Format(
             "<Block type=\"{0}\" material=\"{1}\" x=\"{2}\" y=\"{3}\" rotation=\"{4}\" />\n",
             blockType,
@@ -45,18 +67,33 @@ class StringToStructure
             for (int colIndex = 0; colIndex < l.iterations[rowIndex].Length; colIndex++)
             {
                 string symbol = l.iterations[rowIndex][colIndex].ToString();
-                string blockType = l.block_names[symbol];
-                string material = "wood";
-                double x = l.blockCoordinates[rowIndex][colIndex][0];
-                double y = l.blockCoordinates[rowIndex][colIndex][1];
-                double rotation = 0;
+                //  Check for pigs and TNT
+                if (symbol == "%" || symbol == "&") {
+                    string blockType = LSystem.block_names[symbol];
+                    string material = "";
+                    double x = l.blockCoordinates[rowIndex][colIndex][0];
+                    double y = l.blockCoordinates[rowIndex][colIndex][1];
+                    double rotation = 0;
 
-                //  Check if it's a rotated block.
-                if ("379BD".Contains(symbol)) {
-                    rotation = 90;
+                    xmlBlocks += Xmlify(blockType, material, x, y, rotation);
                 }
+                else {
+                    string[] blockAndMaterial = LSystem.block_names[symbol].Split(' ');
+                    string blockType = blockAndMaterial[0];
+                    string material = blockAndMaterial[1];
+                    double x = l.blockCoordinates[rowIndex][colIndex][0];
+                    double y = l.blockCoordinates[rowIndex][colIndex][1];
+                    double rotation = 0;
 
-                xmlBlocks += Xmlify(blockType, material, x, y, rotation);
+                    //  Check if it's a rotated block.
+                    if ("379BDGKMOQTXZ@$".Contains(symbol))
+                    {
+                        rotation = 90;
+                    }
+
+                    xmlBlocks += Xmlify(blockType, material, x, y, rotation);
+                }
+                
             }
         }
         File.AppendAllText(path, xmlBlocks);
@@ -102,9 +139,9 @@ class StringToStructure
                 };
 
         //LSystem r1 = new LSystem(rules1, 3, 5);
-        LSystem r1 = new LSystem(3, 5);
+        LSystem r1 = new LSystem(6, 10);
         //LSystem r2 = new LSystem(rules2, 3, 5);
-        LSystem r2 = new LSystem(3, 5);
+        LSystem r2 = new LSystem(6, 10);
 
         LSystem r3 = LSystem.Crossover(r1, r2);
 
